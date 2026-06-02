@@ -20,6 +20,7 @@ interface Attachment {
 interface ChatBoxProps {
   orderId: string
   initialMessages: any[]
+  viewerRole?: "admin" | "customer"
 }
 
 function getFileUrl(bucketId: string, fileId: string) {
@@ -114,7 +115,7 @@ function FilePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
   )
 }
 
-export function ChatBox({ orderId, initialMessages }: ChatBoxProps) {
+export function ChatBox({ orderId, initialMessages, viewerRole = "admin" }: ChatBoxProps) {
   const router = useRouter()
   const [error, setError] = useState("")
   const [sending, setSending] = useState(false)
@@ -194,12 +195,13 @@ export function ChatBox({ orderId, initialMessages }: ChatBoxProps) {
                 ? JSON.parse(msg.attachments)
                 : []
               const isAdmin = msg.senderRole === "admin"
+              const isOwnMessage = msg.senderRole === viewerRole
               const initial = (msg.senderName || "?").charAt(0).toUpperCase()
 
               return (
                 <div
                   key={msg.$id}
-                  className={`flex gap-3 ${isAdmin ? "flex-row-reverse" : ""}`}
+                  className={`flex gap-3 ${isOwnMessage ? "flex-row-reverse" : ""}`}
                 >
                   <div
                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
@@ -211,7 +213,7 @@ export function ChatBox({ orderId, initialMessages }: ChatBoxProps) {
                     {initial}
                   </div>
 
-                  <div className={`flex flex-col ${isAdmin ? "items-end" : "items-start"} max-w-[75%]`}>
+                  <div className={`flex flex-col ${isOwnMessage ? "items-end" : "items-start"} max-w-[75%]`}>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-medium text-gray-900">
                         {msg.senderName}
@@ -230,7 +232,7 @@ export function ChatBox({ orderId, initialMessages }: ChatBoxProps) {
 
                     <div
                       className={`rounded-xl px-4 py-2.5 text-sm ${
-                        isAdmin
+                        isOwnMessage
                           ? "bg-primary-600 text-white rounded-tr-sm"
                           : "bg-white text-gray-900 border border-gray-200 rounded-tl-sm"
                       }`}

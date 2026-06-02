@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { CircleUserRound, Globe, Menu, Search, X } from "lucide-react"
+import { CircleUserRound, Globe, LogOut, Menu, Search, X } from "lucide-react"
 import type { Locale } from "@/lib/translations"
 
 const languages: { code: Locale; name: string; flag: string }[] = [
@@ -15,35 +16,41 @@ const languages: { code: Locale; name: string; flag: string }[] = [
 ]
 
 function UserMenu() {
-  const [user, setUser] = useState<{ role: string } | null>(null)
+  const { user, loading, logout } = useAuth()
 
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((u) => setUser(u))
-      .catch(() => setUser(null))
-  }, [])
+  if (loading) return null
 
   if (user) {
     return (
-      <Link
-        href={user.role === "admin" ? "/admin/dashboard" : "/customer/dashboard"}
-        className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
-      >
-        Dashboard
-      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="gap-2">
+            <CircleUserRound className="h-5 w-5" />
+            <span className="hidden sm:inline text-sm">{user.name}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link href={user.role === "admin" ? "/admin/dashboard" : "/customer/dashboard"}>Dashboard</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={logout} className="text-red-600">
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     )
   }
 
   return (
-    <>
+    <div className="flex items-center gap-2">
       <Link href="/login">
         <Button variant="ghost" size="sm" className="text-sm">Sign In</Button>
       </Link>
       <Link href="/register">
         <Button size="sm" className="text-sm">Register</Button>
       </Link>
-    </>
+    </div>
   )
 }
 

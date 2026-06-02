@@ -1,10 +1,12 @@
 import { Card, CardContent } from "@/components/ui"
 import { formatPrice, formatDate } from "@/lib/utils"
-import { databases } from "@/lib/appwrite/config"
+import { adminDatabases } from "@/lib/appwrite/admin"
 import { DATABASE_ID, COLLECTIONS } from "@/lib/appwrite/collections"
 import { getCurrentUser } from "@/lib/server-utils"
 import { redirect } from "next/navigation"
-import { STATUS_LABELS, STATUS_COLORS } from "@/lib/ticket-status"
+import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from "@/lib/ticket-status"
+import { getMyOrderMessages } from "@/lib/appwrite/queries"
+import { ChatBox } from "@/app/admin/orders/[id]/chat-box"
 
 export default async function OrderDetailPage({
   params,
@@ -17,14 +19,15 @@ export default async function OrderDetailPage({
 
   let order: any
   try {
-    order = await databases.getDocument(DATABASE_ID, COLLECTIONS.ORDERS, id)
+    order = await adminDatabases.getDocument(DATABASE_ID, COLLECTIONS.ORDERS, id)
     if (order.userId !== user.$id) redirect("/customer/orders")
   } catch {
     redirect("/customer/orders")
   }
 
   const items = typeof order.items === "string" ? JSON.parse(order.items) : order.items
-  const statusColor = STATUS_COLORS[order.status] || "bg-gray-50 text-gray-700 border-gray-200"
+  const { messages } = await getMyOrderMessages(id)
+  const statusColor = ORDER_STATUS_COLORS[order.status] || "bg-gray-50 text-gray-700 border-gray-200"
 
   return (
     <div className="space-y-6">
@@ -38,7 +41,7 @@ export default async function OrderDetailPage({
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-gray-500">{formatDate(order.$createdAt)}</p>
             <span className={`rounded-full border px-3 py-1 text-xs font-medium ${statusColor}`}>
-              {STATUS_LABELS[order.status] || order.status}
+              {ORDER_STATUS_LABELS[order.status] || order.status}
             </span>
           </div>
           <div className="divide-y divide-gray-100">
@@ -61,6 +64,16 @@ export default async function OrderDetailPage({
             <p className="font-semibold text-gray-900">Total</p>
             <p className="text-lg font-bold text-gray-900">{formatPrice(order.total)}</p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-0">
+          <div className="border-b border-gray-100 px-4 py-3">
+            <h2 className="font-semibold text-gray-900">Support Chat</h2>
+            <p className="text-xs text-gray-500">Send messages and attachments about this order</p>
+          </div>
+          <ChatBox orderId={id} initialMessages={JSON.parse(JSON.stringify(messages))} viewerRole="customer" />
         </CardContent>
       </Card>
     </div>

@@ -1,13 +1,22 @@
 import Link from "next/link"
 import { getService } from "@/lib/appwrite/queries"
-import { getCurrentUser } from "@/lib/server-utils"
+import { createOrder, getCurrentUser } from "@/lib/server-utils"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { Button, Badge } from "@/components/ui"
 import { formatPrice } from "@/lib/utils"
 import { ShoppingCart, Home, ChevronRight } from "lucide-react"
+import { redirect } from "next/navigation"
 
-export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ServiceDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams?: Promise<{ error?: string | string[] }>
+}) {
   const { id } = await params
+  const resolvedSearchParams = searchParams ? await searchParams : {}
+  const orderError = typeof resolvedSearchParams.error === "string" ? resolvedSearchParams.error : null
   const user = await getCurrentUser()
   const { service } = await getService(id)
 
@@ -20,6 +29,35 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </div>
       </PublicLayout>
     )
+  }
+
+  const serviceForOrder = service
+
+  async function placeOrder() {
+    "use server"
+
+    const result = await createOrder({
+      items: [
+        {
+          serviceId: serviceForOrder.$id,
+          name: serviceForOrder.name,
+          price: serviceForOrder.price,
+          type: serviceForOrder.type,
+          image: serviceForOrder.images?.[0] || "",
+        },
+      ],
+      total: Number(serviceForOrder.price) || 0,
+    })
+
+    if (!result.success) {
+      redirect(`/services/${id}?error=${encodeURIComponent(result.error || "order_failed")}`)
+    }
+
+    if (!result.order) {
+      redirect(`/services/${id}?error=order_failed`)
+    }
+
+    redirect(`/customer/orders/${result.order.$id}`)
   }
 
   return (
@@ -57,11 +95,13 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               </p>
               <hr className="my-6" />
               {user ? (
-                <form action="/api/cart/add" method="POST">
-                  <input type="hidden" name="serviceId" value={service.$id} />
-                  <input type="hidden" name="name" value={service.name} />
-                  <input type="hidden" name="price" value={service.price} />
-                  <Button className="w-full" size="lg"><ShoppingCart className="mr-2 h-5 w-5" />Add to Cart</Button>
+                <form action={placeOrder}>
+                  {orderError && (
+                    <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                      Could not place order: {orderError}
+                    </p>
+                  )}
+                  <Button className="w-full" size="lg" type="submit"><ShoppingCart className="mr-2 h-5 w-5" />Place Order</Button>
                 </form>
               ) : (
                 <Link href="/login"><Button className="w-full" size="lg">Sign in to Purchase</Button></Link>

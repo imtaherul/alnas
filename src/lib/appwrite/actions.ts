@@ -194,6 +194,13 @@ export async function sendMessage(prevState: ActionState, formData: FormData) {
 
     const account = new Account(client)
     const user = await account.get()
+    const labels = user.labels || []
+    const senderRole = labels.includes("admin") ? "admin" : "customer"
+    const order = await adminDatabases.getDocument(DATABASE_ID, COLLECTIONS.ORDERS, orderId)
+
+    if (senderRole !== "admin" && order.userId !== user.$id) {
+      return { error: "Not allowed to send messages for this order" }
+    }
 
     const attachments = []
     for (const file of fileEntries) {
@@ -218,14 +225,21 @@ export async function sendMessage(prevState: ActionState, formData: FormData) {
       {
         orderId,
         senderId: user.$id,
-        senderName: user.name || "Admin",
-        senderRole: "admin",
+        senderName: user.name || (senderRole === "admin" ? "Admin" : "Customer"),
+        senderRole,
         content: content?.trim() || "",
         attachments: attachments.length > 0 ? JSON.stringify(attachments) : "",
       }
     )
 
+    if (senderRole === "customer") {
+      await adminDatabases.updateDocument(DATABASE_ID, COLLECTIONS.ORDERS, orderId, {
+        ticketStatus: "reopened",
+      })
+    }
+
     revalidatePath(`/admin/orders/${orderId}`)
+    revalidatePath(`/customer/orders/${orderId}`)
     return { success: true }
   } catch (error: any) {
     return { error: error.message || "Failed to send message" }

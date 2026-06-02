@@ -126,17 +126,18 @@ export async function createOrder(data: {
   const user = await requireAuth()
 
   try {
-    const order = await databases.createDocument(
+    const order = await adminDatabases.createDocument(
       DATABASE_ID,
       COLLECTIONS.ORDERS,
       ID.unique(),
       {
         userId: user.$id,
         items: JSON.stringify(data.items),
-        total: data.total,
+        total: String(data.total),
         status: "pending",
         customerName: user.name,
         customerEmail: user.email,
+        ticketStatus: "new",
       }
     )
     revalidatePath("/customer/orders")
@@ -150,7 +151,7 @@ export async function getMyOrders() {
   const user = await requireAuth()
 
   try {
-    const res = await databases.listDocuments(
+    const res = await adminDatabases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.ORDERS,
       [Query.equal("userId", user.$id), Query.orderDesc("$createdAt")]
@@ -165,7 +166,7 @@ export async function getMyDownloads() {
   const user = await requireAuth()
 
   try {
-    const res = await databases.listDocuments(
+    const res = await adminDatabases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.DOWNLOADS,
       [Query.equal("userId", user.$id), Query.orderDesc("$createdAt")]
@@ -221,6 +222,27 @@ export async function getOrderMessages(orderId: string) {
   await requireAdmin()
 
   try {
+    const res = await adminDatabases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.MESSAGES,
+      [
+        Query.equal("orderId", orderId),
+        Query.orderAsc("$createdAt"),
+      ]
+    )
+    return { messages: res.documents }
+  } catch (error: any) {
+    return { messages: [], error: error.message }
+  }
+}
+
+export async function getMyOrderMessages(orderId: string) {
+  const user = await requireAuth()
+
+  try {
+    const order = await adminDatabases.getDocument(DATABASE_ID, COLLECTIONS.ORDERS, orderId)
+    if (order.userId !== user.$id) return { messages: [], error: "Order not found" }
+
     const res = await adminDatabases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.MESSAGES,
