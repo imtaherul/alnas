@@ -7,6 +7,8 @@ import { redirect } from "next/navigation"
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from "@/lib/ticket-status"
 import { getMyOrderMessages } from "@/lib/appwrite/queries"
 import { ChatBox } from "@/app/admin/orders/[id]/chat-box"
+import { StatusDropdown } from "@/components/shared/status-dropdown"
+import { TICKET_STATUSES, STATUS_LABELS, STATUS_COLORS, STATUS_COLORS_ACTIVE } from "@/lib/ticket-status"
 
 export default async function OrderDetailPage({
   params,
@@ -67,15 +69,27 @@ export default async function OrderDetailPage({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="border-b border-gray-100 px-4 py-3">
-            <h2 className="font-semibold text-gray-900">Support Chat</h2>
-            <p className="text-xs text-gray-500">Send messages and attachments about this order</p>
-          </div>
-          <ChatBox orderId={id} initialMessages={JSON.parse(JSON.stringify(messages))} viewerRole="customer" />
-        </CardContent>
-      </Card>
+       <Card>
+         <CardContent className="p-0">
+           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+             <div>
+               <h2 className="font-semibold text-gray-900">Support Chat</h2>
+               <p className="text-xs text-gray-500">Send messages and attachments about this order</p>
+             </div>
+             <StatusDropdown
+               orderId={id}
+               currentStatus={order.ticketStatus || "new"}
+               statuses={TICKET_STATUSES}
+               labels={STATUS_LABELS}
+               colors={STATUS_COLORS}
+               colorsActive={STATUS_COLORS_ACTIVE}
+               field="ticketStatus"
+               disabled={true}
+             />
+           </div>
+           <ChatBox orderId={id} initialMessages={JSON.parse(JSON.stringify(messages))} viewerRole="customer" />
+         </CardContent>
+       </Card>
     </div>
   )
 }

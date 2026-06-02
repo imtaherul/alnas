@@ -14,6 +14,7 @@ interface StatusDropdownProps {
   colors: Record<string, string>
   colorsActive: Record<string, string>
   field?: "status" | "ticketStatus"
+  disabled?: boolean
 }
 
 export function StatusDropdown({
@@ -24,6 +25,7 @@ export function StatusDropdown({
   colors,
   colorsActive,
   field = "status",
+  disabled = false,
 }: StatusDropdownProps) {
   const [open, setOpen] = useState(false)
   const [updating, setUpdating] = useState(false)
@@ -60,17 +62,18 @@ export function StatusDropdown({
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => !disabled && setOpen(!open)}
         className={cn(
           "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-          colorsActive[currentStatus] || "bg-gray-600 text-white border-gray-600"
+          colorsActive[currentStatus] || "bg-gray-600 text-white border-gray-600",
+          disabled && "opacity-50 cursor-not-allowed"
         )}
       >
         {labels[currentStatus] || currentStatus}
         <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
-      {open && (
+      {!disabled && open && (
         <div className="absolute right-0 z-50 mt-1 min-w-[140px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
           {statuses.map((status) => (
             <button
