@@ -45,7 +45,7 @@ export default async function AdminOrderDetail({ params }: PageProps) {
       : order.items || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <Link
           href="/admin/orders"
@@ -53,22 +53,22 @@ export default async function AdminOrderDetail({ params }: PageProps) {
         >
           &larr; Back to orders
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-xl font-bold text-gray-900">
           Order #{order.$id.slice(0, 8)}
         </h1>
       </div>
 
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
             <div>
               <p className="font-medium text-gray-900">
                 {order.customerName || order.userId}
               </p>
               <p className="text-sm text-gray-500">{order.customerEmail}</p>
             </div>
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-gray-500">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <p className="text-xs sm:text-sm text-gray-500">
                 {formatDate(order.$createdAt)}
               </p>
               <StatusDropdown
@@ -84,23 +84,23 @@ export default async function AdminOrderDetail({ params }: PageProps) {
 
           <div className="divide-y divide-gray-100">
             {items.map((item: any, i: number) => (
-              <div key={i} className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3">
+              <div key={i} className="flex items-center justify-between py-3 gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   {item.image && (
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-10 w-10 rounded object-cover"
+                      className="h-8 w-8 sm:h-10 sm:w-10 rounded object-cover shrink-0"
                     />
                   )}
-                  <div>
-                    <p className="font-medium text-gray-900">{item.name}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{item.name}</p>
                     <p className="text-xs text-gray-500 capitalize">
                       {item.type}
                     </p>
                   </div>
                 </div>
-                <p className="font-medium">{formatPrice(item.price)}</p>
+                <p className="font-medium shrink-0">{formatPrice(item.price)}</p>
               </div>
             ))}
           </div>
@@ -117,7 +117,7 @@ export default async function AdminOrderDetail({ params }: PageProps) {
         <CardContent className="p-0">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <div>
-              <h2 className="font-semibold text-gray-900">Support Chat</h2>
+              <h2 className="text-base font-semibold text-gray-900">Support Chat</h2>
               <p className="text-xs text-gray-500">Communicate with customer</p>
             </div>
             <StatusDropdown

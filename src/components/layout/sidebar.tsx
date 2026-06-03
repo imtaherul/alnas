@@ -42,13 +42,12 @@ export function Sidebar({ role, className }: SidebarProps) {
   const links = role === "admin" ? adminLinks : customerLinks
 
   return (
-    <aside className={cn("h-[100vh] w-64 flex-col bg-sidebar", className)}>
+    <div className={cn("flex h-full w-full flex-col bg-sidebar", className)}>
       <Link href="/" className="flex items-center gap-2 px-6 py-5">
         <ShoppingBag className="h-6 w-6 text-primary-400" />
         <span className="text-lg font-bold text-white">Alnas</span>
       </Link>
-
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {links.map((link) => {
           const Icon = link.icon
           const isActive = pathname === link.href
@@ -57,30 +56,29 @@ export function Sidebar({ role, className }: SidebarProps) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium transition-colors",
                 isActive
                   ? "bg-primary-600 text-white"
                   : "text-sidebar-text hover:bg-sidebar-hover hover:text-white"
               )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-4 w-4" />
               {link.label}
             </Link>
           )
         })}
       </nav>
-
       <div className="border-t border-gray-700 px-3 py-4">
         <form action="/api/logout" method="POST">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-colors"
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-colors"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-4 w-4" />
             Sign Out
           </button>
         </form>
       </div>
-    </aside>
+    </div>
   )
 }

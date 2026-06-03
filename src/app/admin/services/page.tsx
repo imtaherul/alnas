@@ -8,14 +8,14 @@ export default async function AdminServices() {
   const { services } = await getAdminServices()
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Services</h1>
+          <h1 className="text-xl font-bold text-gray-900">Services</h1>
           <p className="mt-1 text-gray-500">Manage your service catalog</p>
         </div>
         <Link href="/admin/services/new">
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="mr-1 h-4 w-4" />
             Add Service
           </Button>
@@ -27,18 +27,18 @@ export default async function AdminServices() {
           {services.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {services.map((service: any) => (
-                <div key={service.$id} className="flex items-center justify-between px-6 py-4">
-                  <div className="flex items-center gap-4">
+                <div key={service.$id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     {service.images?.[0] && (
                       <img
                         src={service.images[0]}
                         alt={service.name}
-                        className="h-12 w-12 rounded-lg object-cover"
+                        className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover shrink-0"
                       />
                     )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900">{service.name}</p>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <p className="font-medium text-gray-900 truncate">{service.name}</p>
                         <Badge variant={service.published ? "success" : "warning"}>
                           {service.published ? "Published" : "Draft"}
                         </Badge>
@@ -47,7 +47,7 @@ export default async function AdminServices() {
                       <p className="text-sm text-gray-500">{formatPrice(service.price)}</p>
                     </div>
                   </div>
-                  <Link href={`/admin/services/${service.$id}`}>
+                  <Link href={`/admin/services/${service.$id}`} className="self-end sm:self-auto">
                     <Button variant="ghost" size="sm">Edit</Button>
                   </Link>
                 </div>

@@ -238,7 +238,7 @@ function RichEditor({
     }
   }, [value]);
 
-  return <div ref={containerRef} className="min-h-[200px]" />;
+  return <div ref={containerRef} className="min-h-[120px] sm:min-h-[200px]" />;
 }
 
 const RichEditorFallback = React.memo(function RichEditorFallback({
@@ -264,7 +264,7 @@ const RichEditorFallback = React.memo(function RichEditorFallback({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Type your message..."
-        className="w-full h-full min-h-[180px] p-3 border border-gray-200 rounded resize-none"
+        className="w-full h-full min-h-[140px] sm:min-h-[180px] p-3 border border-gray-200 rounded resize-none"
       />
     </>
   );
@@ -382,7 +382,7 @@ export function ChatBox({
             </div>
           </div>
         ) : (
-          <div className="space-y-4 p-4">
+          <div className="space-y-3 p-3">
             {initialMessages.map((msg: Message) => {
               const attachments: Attachment[] = msg.attachments
                 ? JSON.parse(msg.attachments)
@@ -465,7 +465,7 @@ export function ChatBox({
       </div>
 
       {!showReply ? (
-        <div className="border-t border-gray-100 bg-white p-4">
+        <div className="border-t border-gray-100 bg-white p-3">
           <button
             type="button"
             onClick={handleReplyClick}
@@ -492,7 +492,7 @@ export function ChatBox({
           <form
             ref={formRef}
             onSubmit={handleSubmit}
-            className="flex flex-col gap-3 border-t border-gray-100 bg-white p-4"
+            className="flex flex-col gap-3 border-t border-gray-100 bg-white p-3"
           >
             <input type="hidden" name="orderId" value={orderId} />
 

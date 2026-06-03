@@ -18,6 +18,12 @@
   --color-sidebar-hover: #1e293b;
   --color-sidebar-text: #94a3b8;
   --color-sidebar-text-active: #ffffff;
+
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-muted-foreground: #64748b;
+  --color-border: #e5e7eb;
+  --color-accent: #f1f5f9;
 }
 
 body {

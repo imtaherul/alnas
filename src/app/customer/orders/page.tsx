@@ -17,9 +17,9 @@ export default async function CustomerOrders() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+        <h1 className="text-xl font-bold text-gray-900">My Orders</h1>
         <p className="mt-1 text-gray-500">View all your orders</p>
       </div>
 
@@ -31,11 +31,11 @@ export default async function CustomerOrders() {
                 <Link
                   key={order.$id}
                   href={`/customer/orders/${order.$id}`}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between px-3 sm:px-6 py-3 hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <p className="text-sm font-medium text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-medium text-gray-900 truncate max-w-[180px] sm:max-w-none">
                         {order.items
                           ? JSON.parse(order.items).map((i: any) => i.name).join(", ")
                           : "Order"}
@@ -46,7 +46,7 @@ export default async function CustomerOrders() {
                     </div>
                     <p className="mt-1 text-xs text-gray-500">{formatDate(order.$createdAt)}</p>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{formatPrice(order.total)}</p>
+                  <p className="text-sm font-semibold text-gray-900 shrink-0 ml-2">{formatPrice(order.total)}</p>
                 </Link>
               ))}
             </div>

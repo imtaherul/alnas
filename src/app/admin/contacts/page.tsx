@@ -13,19 +13,19 @@ export default async function AdminContactsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Contact Submissions</h1>
+      <h1 className="mb-6 text-xl font-bold text-gray-900">Contact Submissions</h1>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {submissions.map((sub: any) => (
           <div
             key={sub.$id}
-            className={`rounded-xl border p-5 shadow-sm ${
+            className={`rounded-xl border p-4 shadow-sm ${
               sub.read ? "border-gray-200 bg-white" : "border-primary-200 bg-primary-50"
             }`}
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-3 sm:gap-4">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-semibold text-gray-900">{sub.name}</h3>
                   {!sub.read && (
                     <span className="inline-flex items-center rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-800">
@@ -43,7 +43,7 @@ export default async function AdminContactsPage() {
                 </p>
               </div>
               {!sub.read && (
-                <form action={markRead}>
+                <form action={markRead} className="shrink-0">
                   <input type="hidden" name="id" value={sub.$id} />
                   <button
                     type="submit"

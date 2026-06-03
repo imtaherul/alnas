@@ -14,13 +14,13 @@ export default async function CustomerDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Welcome, {user?.name}</h1>
+        <h1 className="text-xl font-bold text-gray-900">Welcome, {user?.name}</h1>
         <p className="mt-1 text-gray-500">Manage your purchases and downloads</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <CardContent className="flex items-center gap-4 p-6">
+          <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-primary-100 p-3">
               <Package className="h-6 w-6 text-primary-600" />
             </div>
@@ -31,7 +31,7 @@ export default async function CustomerDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex items-center gap-4 p-6">
+          <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-green-100 p-3">
               <Download className="h-6 w-6 text-green-600" />
             </div>
@@ -42,7 +42,7 @@ export default async function CustomerDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex items-center gap-4 p-6">
+          <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-purple-100 p-3">
               <Clock className="h-6 w-6 text-purple-600" />
             </div>

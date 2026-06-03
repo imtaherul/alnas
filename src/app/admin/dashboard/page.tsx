@@ -22,15 +22,15 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+        <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
         <p className="mt-1 text-gray-500">Overview of your marketplace</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardContent className="flex items-center gap-4 p-6">
+          <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-blue-100 p-3">
-              <Package className="h-6 w-6 text-blue-600" />
+              <Package className="h-5 w-5 text-blue-600" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Orders</p>
@@ -39,9 +39,9 @@ export default async function AdminDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex items-center gap-4 p-6">
+          <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-yellow-100 p-3">
-              <Package className="h-6 w-6 text-yellow-600" />
+              <Package className="h-5 w-5 text-yellow-600" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Pending</p>
@@ -50,9 +50,9 @@ export default async function AdminDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex items-center gap-4 p-6">
+          <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-purple-100 p-3">
-              <ShoppingBag className="h-6 w-6 text-purple-600" />
+              <ShoppingBag className="h-5 w-5 text-purple-600" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Services</p>
@@ -61,9 +61,9 @@ export default async function AdminDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex items-center gap-4 p-6">
+          <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-full bg-green-100 p-3">
-              <DollarSign className="h-6 w-6 text-green-600" />
+              <DollarSign className="h-5 w-5 text-green-600" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Revenue</p>
