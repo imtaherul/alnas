@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "react-quill/dist/quill.snow.css";
+import "quill/dist/quill.snow.css";
 import "./globals-quill.css";
 import { Providers } from "@/components/shared/providers";
 
