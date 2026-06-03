@@ -17,6 +17,7 @@ import {
 
 interface SidebarProps {
   role: "admin" | "customer"
+  className?: string
 }
 
 const adminLinks = [
@@ -36,12 +37,12 @@ const customerLinks = [
   { href: "/customer/profile", label: "Profile", icon: Users },
 ]
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role, className }: SidebarProps) {
   const pathname = usePathname()
   const links = role === "admin" ? adminLinks : customerLinks
 
   return (
-    <aside className="flex h-screen w-64 flex-col bg-sidebar">
+    <aside className={cn("h-[100vh] w-64 flex-col bg-sidebar", className)}>
       <Link href="/" className="flex items-center gap-2 px-6 py-5">
         <ShoppingBag className="h-6 w-6 text-primary-400" />
         <span className="text-lg font-bold text-white">Alnas</span>

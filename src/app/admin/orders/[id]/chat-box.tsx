@@ -14,25 +14,7 @@ import {
   File,
   Reply,
 } from "lucide-react";
-import "@/app/globals-quill.css";
-
-let ReactQuillComponent: any = null;
-
-async function loadReactQuill() {
-  if (!ReactQuillComponent) {
-    try {
-      const module = await import("react-quill");
-      ReactQuillComponent = module.default;
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to load react-quill:", err);
-      return null;
-    }
-  }
-  return ReactQuillComponent;
-}
-
-
+import "quill/dist/quill.snow.css";
 
 const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
 const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!;
@@ -45,29 +27,20 @@ interface Attachment {
   size: number;
 }
 
-interface ChatBoxProps {
-  orderId: string;
-  initialMessages: any[];
-  viewerRole?: "admin" | "customer";
+interface Message {
+  $id: string;
+  $createdAt: string;
+  senderRole: "admin" | "customer";
+  senderName: string;
+  content: string;
+  attachments: string;
+  [key: string]: unknown;
 }
 
-interface QuillFormats {
-  header: string | boolean;
-  font: string;
-  size: string[];
-  bold: boolean;
-  italic: boolean;
-  underline: boolean;
-  strike: boolean;
-  blockquote: boolean;
-  list: string | boolean;
-  bullet: boolean;
-  align: string[];
-  color: string[];
-  background: string[];
-  link: string | boolean;
-  image: string | boolean;
-  clean: boolean;
+interface ChatBoxProps {
+  orderId: string;
+  initialMessages: Message[];
+  viewerRole?: "admin" | "customer";
 }
 
 function getFileUrl(bucketId: string, fileId: string) {
@@ -190,23 +163,139 @@ function FilePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
   );
 }
 
-class EditorErrorBoundary extends React.Component<{children?: React.ReactNode}, {hasError: boolean; message: string}> {
-  constructor(props: any) {
+function RichEditor({
+  value,
+  onChange,
+  placeholder = "Type your message...",
+}: {
+  value: string;
+  onChange: (content: string) => void;
+  placeholder?: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const quillRef = useRef<{ root: HTMLElement } | null>(null);
+  const onChangeRef = useRef(onChange);
+  const placeholderRef = useRef(placeholder);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    placeholderRef.current = placeholder;
+  }, [placeholder]);
+
+  useEffect(() => {
+    if (!containerRef.current || quillRef.current) return;
+
+    let cancelled = false;
+
+    import("quill").then((QuillModule) => {
+      if (cancelled || !containerRef.current) return;
+
+      const Quill = QuillModule.default;
+
+      const toolbarOptions = [
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        [{ font: [] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ indent: "-1" }, { indent: "+1" }],
+        [{ direction: "rtl" }],
+        [{ align: [] }],
+        ["link", "clean"],
+      ];
+
+      const quill = new Quill(containerRef.current, {
+        theme: "snow",
+        placeholder: placeholderRef.current,
+        modules: {
+          toolbar: toolbarOptions,
+        },
+      });
+
+      if (value) {
+        quill.root.innerHTML = value;
+      }
+
+      quill.on("text-change", () => {
+        onChangeRef.current(quill.root.innerHTML);
+      });
+
+      quillRef.current = quill;
+    });
+
+    return () => {
+      cancelled = true;
+      quillRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (quillRef.current && value !== quillRef.current.root.innerHTML) {
+      quillRef.current.root.innerHTML = value;
+    }
+  }, [value]);
+
+  return <div ref={containerRef} className="min-h-[200px]" />;
+}
+
+const RichEditorFallback = React.memo(function RichEditorFallback({
+  value,
+  onChange,
+  editorError,
+  editorImportStatus,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  editorError: string;
+  editorImportStatus: string;
+}) {
+  return (
+    <>
+      {editorError ? (
+        <p className="text-xs text-yellow-600 mb-2">{editorError}</p>
+      ) : null}
+      <p className="text-xs text-gray-500 mb-2">
+        Editor status: {editorImportStatus}
+      </p>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Type your message..."
+        className="w-full h-full min-h-[180px] p-3 border border-gray-200 rounded resize-none"
+      />
+    </>
+  );
+});
+
+class EditorErrorBoundary extends React.Component<
+  { children?: React.ReactNode; onError?: (error: Error) => void },
+  { hasError: boolean; message: string }
+> {
+  constructor(props: {
+    children?: React.ReactNode;
+    onError?: (error: Error) => void;
+  }) {
     super(props);
     this.state = { hasError: false, message: "" };
   }
 
-  componentDidCatch(error: any) {
-    // eslint-disable-next-line no-console
-    console.error("Editor render error", error);
+  componentDidCatch(error: Error) {
+    this.props.onError?.(error);
     this.setState({ hasError: true, message: error?.message || String(error) });
   }
 
   render() {
     if (this.state.hasError) {
-      return <div className="text-xs text-red-500">Rich editor failed to render: {this.state.message}</div>;
+      return (
+        <div className="text-xs text-red-500">
+          Rich editor failed to render: {this.state.message}
+        </div>
+      );
     }
-    return this.props.children as any;
+    return this.props.children;
   }
 }
 
@@ -221,13 +310,11 @@ export function ChatBox({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [showReply, setShowReply] = useState(false);
   const [content, setContent] = useState("");
-  const [editorLoaded, setEditorLoaded] = useState(false);
   const [editorError, setEditorError] = useState("");
-  const [editorImportStatus, setEditorImportStatus] = useState<string>("idle");
+  const [editorStatus, setEditorStatus] = useState<string>("idle");
   const formRef = useRef<HTMLFormElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (listRef.current) {
@@ -239,10 +326,6 @@ export function ChatBox({
     const files = Array.from(e.target.files || []);
     setSelectedFiles((prev) => [...prev, ...files]);
     if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-
-  function handleChange(content: string) {
-    setContent(content);
   }
 
   function removeFile(index: number) {
@@ -274,17 +357,13 @@ export function ChatBox({
     }
   }
 
-  async function handleReplyClick() {
+  function handleReplyClick() {
     setShowReply(true);
-    setEditorImportStatus("loading");
-    const Quill = await loadReactQuill();
-    if (Quill) {
-      setEditorImportStatus("loaded");
-      setEditorLoaded(true);
-    } else {
-      setEditorImportStatus("failed");
-      setEditorError("Rich editor unavailable; using plain text.");
-    }
+    setEditorStatus("loaded");
+  }
+
+  function handleEditorError(error: Error) {
+    setEditorError(`Render error: ${error.message}`);
   }
 
   return (
@@ -304,7 +383,7 @@ export function ChatBox({
           </div>
         ) : (
           <div className="space-y-4 p-4">
-            {initialMessages.map((msg: any) => {
+            {initialMessages.map((msg: Message) => {
               const attachments: Attachment[] = msg.attachments
                 ? JSON.parse(msg.attachments)
                 : [];
@@ -351,12 +430,17 @@ export function ChatBox({
                     <div
                       className={`rounded-xl px-4 py-2.5 text-sm ${
                         isOwnMessage
-                          ? "bg-primary-600 text-white rounded-tr-sm"
+                          ? "bg-gray-800 text-white rounded-tr-sm"
                           : "bg-white text-gray-900 border border-gray-200 rounded-tl-sm"
                       }`}
                     >
                       {msg.content && (
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <div className="ql-snow">
+                          <div
+                            className="ql-editor"
+                            dangerouslySetInnerHTML={{ __html: msg.content }}
+                          />
+                        </div>
                       )}
 
                       {attachments.length > 0 && (
@@ -412,42 +496,18 @@ export function ChatBox({
           >
             <input type="hidden" name="orderId" value={orderId} />
 
-            <div className="flex-1 w-full min-h-[600px]">
-              {editorLoaded && ReactQuillComponent ? (
-                <EditorErrorBoundary>
-                  <ReactQuillComponent
-                    theme="snow"
-                    value={content}
-                    onChange={handleChange}
-                    placeholder="Type your message..."
-                    modules={{
-                      toolbar: [
-                        [{ header: [1, 2, 3, 4, 5, 6, false] }],
-                        [{ font: [] }],
-                        [{ size: [] }],
-                        ["bold", "italic", "underline", "strike"],
-                        [{ color: [] }, { background: [] }],
-                        [{ script: "super" }, { script: "sub" }],
-                        [{ list: "ordered" }, { list: "bullet" }],
-                        [{ indent: "-1" }, { indent: "+1" }],
-                        [{ direction: "rtl" }],
-                        [{ align: [] }],
-                        ["link", "image", "clean"],
-                      ],
-                    }}
-                  />
+            <div className="flex-1 w-full min-h-[200px]">
+              {editorStatus === "loaded" ? (
+                <EditorErrorBoundary onError={handleEditorError}>
+                  <RichEditor value={content} onChange={setContent} />
                 </EditorErrorBoundary>
               ) : (
-                <>
-                  {editorError ? <p className="text-xs text-yellow-600 mb-2">{editorError}</p> : null}
-                  <p className="text-xs text-gray-500 mb-2">Editor status: {editorImportStatus}</p>
-                  <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Type your message..."
-                    className="w-full h-full min-h-[500px] p-3 border border-gray-200 rounded resize-none"
-                  />
-                </>
+                <RichEditorFallback
+                  value={content}
+                  onChange={setContent}
+                  editorError={editorError}
+                  editorImportStatus={editorStatus}
+                />
               )}
             </div>
 
